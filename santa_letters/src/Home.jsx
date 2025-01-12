@@ -36,7 +36,7 @@ const PopupContent = styled.div`
   width: 400px;
   display: flex;
   flex-direction: column;
-  align-items: center; /* Centrează elementele pe axa orizontală */
+  align-items: center;
 `;
 
 const TextArea = styled.textarea`
@@ -46,17 +46,16 @@ const TextArea = styled.textarea`
   margin: 10px 0;
   border-radius: 5px;
   border: 1px solid #ccc;
-  align-self: center; /* Centrează textarea în interiorul PopupContent */
 `;
 
 const Pagina = styled.div`
   background: #9fc5e8;
-  height: 100vh; /* Ocupă întreaga înălțime a ecranului */
-  width: 100vw; /* Ocupă întreaga lățime a ecranului */
-  display: flex; /* Folosește flexbox */
-  justify-content: center; /* Centrează pe orizontală */
-  align-items: center; /* Centrează pe verticală */
-  flex-direction: column; /* Aliniază elementele pe verticală */
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
 `;
 
 const Title = styled.h2`
@@ -65,49 +64,87 @@ const Title = styled.h2`
   margin-bottom: 20px;
 `;
 
+const Message = styled.p`
+  color: white;
+  font-weight: bold;
+  margin-top: 10px;
+  background: ${({ success }) => (success ? 'green' : 'red')};
+  padding: 10px;
+  border-radius: 5px;
+`;
+
 const Home = () => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [letterContent, setLetterContent] = useState('');
-  const [userRole, setUserRole] = useState('user'); // Valoare implicită
+  const [userRole, setUserRole] = useState('user');
+  const [message, setMessage] = useState('');
+  const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
 
-  // Simulăm un mecanism de autentificare și roluri
   useEffect(() => {
-    // Aici, de obicei, am verifica rolul utilizatorului (de exemplu, dintr-un context sau localStorage)
-    const role = localStorage.getItem('role') || 'user'; // 'admin' sau 'user'
+    const role = localStorage.getItem('role') || 'user';
     setUserRole(role);
   }, []);
 
   const handleCreateLetter = () => {
     setIsPopupOpen(true);
+    setMessage('');
   };
 
   const handleClosePopup = () => {
     setIsPopupOpen(false);
+    setLetterContent('');
   };
 
-  const handleSubmitLetter = () => {
-    // Aici poți adăuga logica pentru a trimite scrisoarea
-    console.log('Scrisoare trimisă:', letterContent);
-    setLetterContent('');
-    setIsPopupOpen(false);
+  const handleSubmitLetter = async () => {
+    setMessage('');
+    const userId = localStorage.getItem('user_id'); // Presupunem că ID-ul utilizatorului e salvat în localStorage
+
+    if (!userId) {
+      setMessage('Eroare: Nu ești autentificat!');
+      setSuccess(false);
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:3002/letters', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          content: letterContent,
+          user_id: userId,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Trimiterea scrisorii a eșuat.');
+      }
+
+      setMessage('Scrisoarea a fost trimisă cu succes!');
+      setSuccess(true);
+      setLetterContent('');
+      setTimeout(() => {
+        setIsPopupOpen(false);
+        setMessage('');
+      }, 2000);
+    } catch (err) {
+      setMessage(err.message);
+      setSuccess(false);
+    }
   };
 
   const handleViewLetters = () => {
     navigate('/scrisori');
   };
 
-  const handleViewAllLetters = () => {
-    navigate('/scrisori'); // Aceasta va fi pagina cu toate scrisorile
-  };
-
   return (
     <Pagina>
       <Title>Santa Letters</Title>
 
-      {/* Verificăm dacă utilizatorul este admin */}
       {userRole === 'admin' ? (
-        <Button onClick={handleViewAllLetters}>Vizualizează toate scrisorile</Button>
+        <Button onClick={() => navigate('/scrisori')}>Vizualizează toate scrisorile</Button>
       ) : (
         <>
           <Button onClick={handleCreateLetter}>Creează o scrisoare către Moș Crăciun</Button>
@@ -115,7 +152,8 @@ const Home = () => {
         </>
       )}
 
-      {/* Popup pentru crearea scrisorii */}
+      {message && <Message success={success}>{message}</Message>}
+
       {isPopupOpen && (
         <Popup>
           <PopupContent>
