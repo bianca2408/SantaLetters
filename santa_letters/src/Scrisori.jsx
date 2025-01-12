@@ -50,7 +50,7 @@ const Letters = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const userId = localStorage.getItem('user_id');
+    const userId = localStorage.getItem('userId');
     const userRole = localStorage.getItem('role'); // Presupunem că rolul este salvat în localStorage
 
     if (!userId) {

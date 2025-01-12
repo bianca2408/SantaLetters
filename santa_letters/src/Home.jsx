@@ -98,7 +98,7 @@ const Home = () => {
 
   const handleSubmitLetter = async () => {
     setMessage('');
-    const userId = localStorage.getItem('user_id'); // Presupunem că ID-ul utilizatorului e salvat în localStorage
+    const userId = localStorage.getItem('userId'); // Presupunem că ID-ul utilizatorului e salvat în localStorage
 
     if (!userId) {
       setMessage('Eroare: Nu ești autentificat!');
