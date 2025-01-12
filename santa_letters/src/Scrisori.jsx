@@ -77,6 +77,23 @@ const Letters = () => {
     fetchLetters();
   }, []);
 
+  const handleDeleteLetter = async (letterId) => {
+    try {
+      const response = await fetch(`http://localhost:3002/letters/${letterId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Eroare la ștergerea scrisorii');
+      }
+
+      setMessage('Scrisoarea a fost ștearsă cu succes!');
+      setLetters((prevLetters) => prevLetters.filter((letter) => letter.id !== letterId));
+    } catch (err) {
+      setMessage(err.message);
+    }
+  };
+
   const handleCreateLetter = () => {
     navigate('/home');
   };
@@ -94,6 +111,7 @@ const Letters = () => {
           <LetterItem key={letter.id}>
             <h3>Scrisoare #{letter.id}</h3>
             <Content>{letter.content}</Content>
+            <Button onClick={() => handleDeleteLetter(letter.id)}>Șterge</Button>
           </LetterItem>
         ))
       )}
