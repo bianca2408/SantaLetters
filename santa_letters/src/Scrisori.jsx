@@ -50,7 +50,8 @@ const Letters = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const userId = localStorage.getItem('user_id'); // Presupunem că user_id e salvat în localStorage
+    const userId = localStorage.getItem('user_id');
+    const userRole = localStorage.getItem('role'); // Presupunem că rolul este salvat în localStorage
 
     if (!userId) {
       setMessage('Eroare: Nu ești autentificat!');
@@ -59,10 +60,13 @@ const Letters = () => {
 
     const fetchLetters = async () => {
       try {
-        const response = await fetch(`http://localhost:3002/letters/${userId}`);
+        const url = userRole === 'admin' ? 'http://localhost:3002/letters' : `http://localhost:3002/letters/${userId}`;
+        const response = await fetch(url);
+        
         if (!response.ok) {
           throw new Error('Eroare la preluarea scrisorilor');
         }
+
         const data = await response.json();
         setLetters(data);
       } catch (err) {
