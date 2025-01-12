@@ -4,12 +4,12 @@ import { useNavigate } from 'react-router-dom';
 
 const Page = styled.div`
     background: #db4c4c; 
-    height: 100vh; /* Ocupă întreaga înălțime a ecranului */
-    width: 100vw; /* Ocupă întreaga lățime a ecranului */
-    display: flex; /* Folosește flexbox */
-    justify-content: center; /* Centrează pe orizontală */
-    align-items: center; /* Centrează pe verticală */
-    flex-direction: column; /* Aliniază elementele pe verticală */
+    height: 100vh; 
+    width: 100vw;
+    display: flex; 
+    justify-content: center; 
+    align-items: center;
+    flex-direction: column;
 `;
 
 const Input = styled.input`
@@ -19,14 +19,14 @@ const Input = styled.input`
     font-size: 16px;
     margin-right: 5px;
     border: 1px solid black;
-    border-radius: 10px; /* Rotunjirea colțurilor */
+    border-radius: 10px;
     width: 200px;
-    box-sizing: border-box; /* Previne depășirea dimensiunii specificate */
-    outline: none; /* Elimină chenarul albastru în jurul inputului */
+    box-sizing: border-box;
+    outline: none;
     transition: border-color 0.3s ease;
 
     &:focus {
-        border-color: #7dac41; /* Schimbă culoarea chenarului la focus */
+        border-color: #7dac41;
     }
 `;
 
@@ -50,19 +50,24 @@ const Register = () => {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState(null);
+    const [success, setSuccess] = useState(null);
     const navigate = useNavigate();
 
     const handleLogin = () => {
         navigate('/');
-      };
+    };
 
     const handleRegister = async () => {
+        setError(null);
+        setSuccess(null);
+
         if (password !== confirmPassword) {
             setError('Parolele nu corespund!');
             return;
         }
+
         try {
-            const response = await fetch('http://10.96.17.40:80/register', {
+            const response = await fetch('http://localhost:3001/register', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -74,16 +79,21 @@ const Register = () => {
             });
 
             if (!response.ok) {
-                throw new Error('Înregistrare eșuată');
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Înregistrare eșuată');
             }
 
             const data = await response.json();
+            setSuccess('Înregistrare reușită! Redirectare către login...');
             console.log('Înregistrare reușită:', data);
-            // Navighează la login după înregistrare
-            navigate('/');
+
+            // Navigare către login după 2 secunde
+            setTimeout(() => {
+                navigate('/');
+            }, 2000);
         } catch (err) {
             setError(err.message);
-            console.log('Eroare la înregistrare:', err);
+            console.error('Eroare la înregistrare:', err);
         }
     };
 
@@ -111,7 +121,8 @@ const Register = () => {
             <Button onClick={handleRegister}>Register</Button>
             <p>Ai deja cont? Apasă pe butonul de mai jos!</p>
             <Button onClick={handleLogin}>Login</Button>
-            {error && <p>{error}</p>}
+            {error && <p style={{ color: 'red' }}>{error}</p>}
+            {success && <p style={{ color: 'green' }}>{success}</p>}
         </Page>
     );
 };
