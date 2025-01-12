@@ -2,19 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
-// Stiluri pentru vizualizarea scrisorilor
 const LetterList = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 20px;
   background: #b1cd8d;
-  height: 100vh; /* Ocupă întreaga înălțime a ecranului */
-  width: 100vw; /* Ocupă întreaga lățime a ecranului */
-  display: flex; /* Folosește flexbox */
-  justify-content: center; /* Centrează pe orizontală */
-  align-items: center; /* Centrează pe verticală */
-  flex-direction: column; /* Aliniază elementele pe verticală */
+  height: 100vh;
+  width: 100vw;
 `;
 
 const LetterItem = styled.div`
@@ -51,37 +46,32 @@ const Button = styled.button`
 
 const Letters = () => {
   const [letters, setLetters] = useState([]);
-  const [userRole, setUserRole] = useState('user'); // Rolul utilizatorului
+  const [message, setMessage] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Simulăm rolul utilizatorului
-    const role = localStorage.getItem('role') || 'user'; // 'admin' sau 'user'
-    setUserRole(role);
+    const userId = localStorage.getItem('user_id'); // Presupunem că user_id e salvat în localStorage
 
-    // Aici vom încărca scrisorile dintr-o sursă externă (ex: API)
-    // Exemplu static de scrisori
-    const fetchedLetters = [
-      { id: 1, title: "Scrisoare pentru Moș Crăciun", content: "Dragă Moș Crăciun, îți doresc să fiu mai bun anul acesta.", user: 'user1' },
-      { id: 2, title: "Mersul la școală", content: "În acest an vreau să învăț mai mult la școală.", user: 'user1' },
-      { id: 3, title: "Vreau un câine", content: "Mi-aș dori un câine ca animal de companie.", user: 'user3' },
-    ];
-    
-    // Dacă utilizatorul este admin, se vor încărca toate scrisorile
-    if (role === 'admin') {
-      setLetters(fetchedLetters);
-    } else {
-      // Dacă nu este admin, doar scrisorile utilizatorului curent
-      const userLetters = fetchedLetters.filter(letter => letter.user === 'user1'); // Exemplu pentru utilizatorul 'user1'
-      setLetters(userLetters);
+    if (!userId) {
+      setMessage('Eroare: Nu ești autentificat!');
+      return;
     }
-  }, []);
 
-  const handleDeleteLetter = (letterId) => {
-    // Filtrăm scrisoarea care trebuie ștearsă
-    setLetters((prevLetters) => prevLetters.filter((letter) => letter.id !== letterId));
-    console.log('Scrisoare ștearsă:', letterId);
-  };
+    const fetchLetters = async () => {
+      try {
+        const response = await fetch(`http://localhost:3002/letters/${userId}`);
+        if (!response.ok) {
+          throw new Error('Eroare la preluarea scrisorilor');
+        }
+        const data = await response.json();
+        setLetters(data);
+      } catch (err) {
+        setMessage(err.message);
+      }
+    };
+
+    fetchLetters();
+  }, []);
 
   const handleCreateLetter = () => {
     navigate('/home');
@@ -90,20 +80,20 @@ const Letters = () => {
   return (
     <LetterList>
       <Title>Scrisorile tale</Title>
+
+      {message && <p style={{ color: 'red' }}>{message}</p>}
+
       {letters.length === 0 ? (
         <p>Nu ai scris încă nici o scrisoare!</p>
       ) : (
         letters.map((letter) => (
           <LetterItem key={letter.id}>
-            <h3>{letter.title}</h3>
+            <h3>Scrisoare #{letter.id}</h3>
             <Content>{letter.content}</Content>
-            {/* Dacă este admin, afișăm butonul de ștergere */}
-            {userRole === 'admin' && (
-              <Button onClick={() => handleDeleteLetter(letter.id)}>Șterge scrisoarea</Button>
-            )}
           </LetterItem>
         ))
       )}
+
       <Button onClick={handleCreateLetter}>Creează o nouă scrisoare</Button>
     </LetterList>
   );
