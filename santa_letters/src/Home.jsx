@@ -152,7 +152,7 @@ const Home = () => {
         </>
       )}
 
-      {message && <Message success={success}>{message}</Message>}
+      {message && <Message success={success ? 'true' : 'false'}>{message}</Message>}
 
       {isPopupOpen && (
         <Popup>
