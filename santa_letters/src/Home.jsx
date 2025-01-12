@@ -73,6 +73,24 @@ const Message = styled.p`
   border-radius: 5px;
 `;
 
+
+const LogoutButton = styled.button`
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  padding: 10px 15px;
+  background-color: #db4c4c;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+
+  &:hover {
+    background-color: #c0392b;
+  }
+`;
+
 const Home = () => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [letterContent, setLetterContent] = useState('');
@@ -139,8 +157,16 @@ const Home = () => {
     navigate('/scrisori');
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('userId');
+    localStorage.removeItem('role');
+    navigate('/login');
+  };
+
   return (
     <Pagina>
+      <LogoutButton onClick={handleLogout}>Logout</LogoutButton>
+
       <Title>Santa Letters</Title>
 
       {userRole === 'admin' ? (
